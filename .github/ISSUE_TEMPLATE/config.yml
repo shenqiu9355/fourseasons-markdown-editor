@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Discussions and questions
+    url: https://github.com/shenqiu9355/fourseasons-markdown-editor/issues
+    about: Use Issues for questions, feedback, bug reports, and feature ideas.

@@ -69,6 +69,16 @@ This repository includes `.codex-plugin/plugin.json` and `skills/hongmeng-editor
 
 Codex currently does not expose a public extension point that lets a plugin claim Markdown file clicks globally. For now, start the local editor service and open editor URLs manually or through Codex instructions. In Codex Desktop, a capable agent should prefer the in-app browser when opening `http://127.0.0.1:7865/`; outside Codex, the same URL opens in the user's normal browser.
 
+## Feedback
+
+Bug reports and feature requests are welcome through GitHub Issues:
+
+```text
+https://github.com/shenqiu9355/fourseasons-markdown-editor/issues
+```
+
+Please avoid sharing private writing content, private paths, credentials, logs with secrets, or sensitive files. A small synthetic Markdown example is enough for most reports.
+
 ## Repository Layout
 
 ```text
