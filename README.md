@@ -16,7 +16,7 @@ It was adapted from a private writing workflow, but this public repository is co
 - Basic punctuation/bracket/spacing check
 - Light, dark, and comfort themes
 - Display controls for font, size, and line height
-- Interface languages: English, Simplified Chinese, Traditional Chinese, Japanese, French, German, Spanish, and Korean
+- Interface languages: English, Simplified Chinese, Traditional Chinese, French, German, Spanish, Portuguese, Italian, Dutch, Polish, Russian, Turkish, Arabic, Hindi, Indonesian, Vietnamese, Thai, Korean, and Japanese
 
 Simplified Chinese, Traditional Chinese, and Japanese language packs require a one-time local acknowledgement phrase. The confirmation is stored only in the browser on the user's computer. It is not uploaded and is not written to the activity log.
 
