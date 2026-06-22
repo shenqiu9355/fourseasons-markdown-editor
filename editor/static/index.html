@@ -100,21 +100,38 @@
       <label>
         <span>字体</span>
         <select id="editorFontFamily" title="只改变编辑器显示字体，不修改正文">
-          <option value='"Microsoft YaHei", "Segoe UI", sans-serif'>微软雅黑</option>
-          <option value='SimSun, "Songti SC", serif'>宋体</option>
-          <option value='KaiTi, "Kaiti SC", serif'>楷体</option>
-          <option value='FangSong, "Fangsong SC", serif'>仿宋</option>
+          <option value='system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'>System Sans</option>
+          <option value='"Microsoft YaHei", "Segoe UI", sans-serif'>Microsoft YaHei / 微软雅黑</option>
+          <option value='"Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif'>Traditional Chinese / 繁中黑体</option>
+          <option value='SimSun, "Songti SC", serif'>Songti / 宋体</option>
+          <option value='KaiTi, "Kaiti SC", serif'>Kaiti / 楷体</option>
+          <option value='FangSong, "Fangsong SC", serif'>Fangsong / 仿宋</option>
+          <option value='Georgia, "Times New Roman", serif'>English Serif</option>
+          <option value='"Cascadia Mono", "JetBrains Mono", Consolas, monospace'>Mono / Code</option>
+          <option value='"Yu Gothic", YuGothic, "Hiragino Sans", Meiryo, sans-serif'>Japanese Gothic / 日本語ゴシック</option>
+          <option value='"Yu Mincho", "Hiragino Mincho ProN", "MS Mincho", serif'>Japanese Mincho / 日本語明朝</option>
+          <option value='"Malgun Gothic", "Apple SD Gothic Neo", sans-serif'>Korean / 한국어</option>
         </select>
       </label>
       <label>
         <span>字号</span>
         <select id="editorFontSize" title="只改变编辑器显示字号，不修改正文">
+          <option value="13">13</option>
+          <option value="14">14</option>
           <option value="15">15</option>
           <option value="16">16</option>
           <option value="17">17</option>
           <option value="18">18</option>
+          <option value="19">19</option>
           <option value="20">20</option>
+          <option value="21">21</option>
           <option value="22">22</option>
+          <option value="23">23</option>
+          <option value="24">24</option>
+          <option value="25">25</option>
+          <option value="26">26</option>
+          <option value="27">27</option>
+          <option value="28">28</option>
         </select>
       </label>
       <label>
@@ -133,8 +150,13 @@
         <button type="button" class="formatButton italicMark" data-format="italic" title="斜体：用 * 包住选中文字">I</button>
         <button type="button" class="formatButton" data-format="h1" title="一级标题">H1</button>
         <button type="button" class="formatButton" data-format="h2" title="二级标题">H2</button>
-        <button type="button" class="formatButton" data-format="quote" title="引用">引</button>
-        <button type="button" class="formatButton" data-format="list" title="列表">列</button>
+        <button type="button" class="formatButton" data-format="quote" title="引用">&gt;</button>
+        <button type="button" class="formatButton" data-format="list" title="列表">-</button>
+        <button type="button" class="formatButton" data-format="ordered-list" title="编号列表">1.</button>
+        <button type="button" class="formatButton" data-format="inline-code" title="行内代码">&lt;&gt;</button>
+        <button type="button" class="formatButton strikeMark" data-format="strike" title="删除线">S</button>
+        <button type="button" class="formatButton" data-format="link" title="链接">[]</button>
+        <button type="button" class="formatButton" data-format="hr" title="分隔线">---</button>
       </div>
     </section>
 

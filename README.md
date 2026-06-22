@@ -15,7 +15,9 @@ It was adapted from a private writing workflow, but this public repository is co
 - Full-text search inside the configured workspace
 - Basic punctuation/bracket/spacing check
 - Light, dark, and comfort themes
-- Display controls for font, size, and line height
+- Display controls for font, size, and line height, including Chinese, English, Japanese, Korean, serif, sans-serif, and monospace font stacks
+- Ctrl/Command + mouse wheel font-size zoom inside the editor
+- Markdown formatting tools for bold, italic, headings, quotes, unordered and numbered lists, inline code, strikethrough, links, and horizontal rules
 - Interface languages: English, Simplified Chinese, Traditional Chinese, French, German, Spanish, Portuguese, Italian, Dutch, Polish, Russian, Turkish, Arabic, Hindi, Indonesian, Vietnamese, Thai, Korean, and Japanese
 
 Simplified Chinese, Traditional Chinese, and Japanese language packs require a one-time local acknowledgement phrase. The confirmation is stored only in the browser on the user's computer. It is not uploaded and is not written to the activity log.
@@ -62,7 +64,7 @@ You can also copy `editor/config.example.json` to `editor/config.json` and edit 
 
 This repository includes `.codex-plugin/plugin.json` and `skills/hongmeng-editor/SKILL.md`.
 
-Codex currently does not expose a public extension point that lets a plugin claim Markdown file clicks globally. For now, start the local editor service and open editor URLs manually or through Codex instructions.
+Codex currently does not expose a public extension point that lets a plugin claim Markdown file clicks globally. For now, start the local editor service and open editor URLs manually or through Codex instructions. In Codex Desktop, a capable agent should prefer the in-app browser when opening `http://127.0.0.1:7865/`; outside Codex, the same URL opens in the user's normal browser.
 
 ## Repository Layout
 

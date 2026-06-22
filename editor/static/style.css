@@ -637,6 +637,10 @@ button.iconButton {
   font-size: var(--ui-sm);
 }
 
+.formatBar label:first-child select {
+  min-width: 210px;
+}
+
 .formatActions {
   display: flex;
   gap: 4px;
@@ -663,6 +667,10 @@ button.iconButton {
 
 .formatButton.italicMark {
   font-style: italic;
+}
+
+.formatButton.strikeMark {
+  text-decoration: line-through;
 }
 
 .bottomBar {

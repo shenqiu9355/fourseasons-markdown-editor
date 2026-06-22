@@ -35,6 +35,8 @@ Then open:
 http://127.0.0.1:7865/
 ```
 
+When launched from a normal terminal, the editor is just a local web app and can be opened in any browser. When used from Codex Desktop, ask Codex to open the local URL in its in-app browser if that capability is available.
+
 ## Configure With JSON
 
 Copy:

@@ -30,9 +30,10 @@ If no workspace root is configured, the editor opens the safe sample workspace u
 
 1. Confirm the configured workspace root.
 2. Keep all file operations inside that root.
-3. When opening a file, prefer an editor URL such as `http://127.0.0.1:<port>/?path=<encoded-file-path>`.
-4. For edits, show or preserve a diff before saving when the runtime supports it.
-5. Keep backups and activity logs outside the public repository or in ignored local-only folders.
+3. In Codex Desktop, prefer opening the editor URL in the in-app browser when a browser-control capability is available. If the host cannot open the in-app browser, show the local URL for the user to open manually.
+4. When opening a file, prefer an editor URL such as `http://127.0.0.1:<port>/?path=<encoded-file-path>`.
+5. For edits, show or preserve a diff before saving when the runtime supports it.
+6. Keep backups and activity logs outside the public repository or in ignored local-only folders.
 
 ## Public Source Note
 

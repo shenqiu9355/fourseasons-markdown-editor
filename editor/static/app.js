@@ -13,12 +13,14 @@ const state = {
   pendingLocale: "",
   theme: "light",
   viewPrefs: {
-    fontFamily: '"Microsoft YaHei", "Segoe UI", sans-serif',
+    fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     fontSize: 17,
     lineHeight: 1.85,
   },
 };
 
+const FONT_SIZE_MIN = 13;
+const FONT_SIZE_MAX = 28;
 const VIEW_PREF_KEY = "hongmengEditorViewPrefs";
 const THEME_KEY = "hongmengEditorTheme";
 const LOCALE_KEY = "hongmengEditorLocale";
@@ -77,6 +79,16 @@ const I18N = {
     h2Title: "二级标题",
     quoteTitle: "引用",
     listTitle: "列表",
+    orderedListTitle: "编号列表",
+    inlineCodeTitle: "行内代码",
+    strikeTitle: "删除线",
+    linkTitle: "链接",
+    hrTitle: "分隔线",
+    boldPlaceholder: "粗体文字",
+    italicPlaceholder: "斜体文字",
+    codePlaceholder: "代码",
+    strikePlaceholder: "删除文字",
+    linkTextPlaceholder: "链接文字",
     editorPlaceholder: "选择一章开始写。",
     previewMarkdown: "预览 Markdown",
     returnEdit: "返回编辑",
@@ -186,6 +198,16 @@ const I18N = {
     h2Title: "Heading 2",
     quoteTitle: "Quote",
     listTitle: "List",
+    orderedListTitle: "Numbered list",
+    inlineCodeTitle: "Inline code",
+    strikeTitle: "Strikethrough",
+    linkTitle: "Link",
+    hrTitle: "Horizontal rule",
+    boldPlaceholder: "bold text",
+    italicPlaceholder: "italic text",
+    codePlaceholder: "code",
+    strikePlaceholder: "deleted text",
+    linkTextPlaceholder: "link text",
     editorPlaceholder: "Choose a file to start writing.",
     previewMarkdown: "Preview Markdown",
     returnEdit: "Back to Edit",
@@ -272,6 +294,16 @@ I18N["zh-Hant"] = {
   restoreDraft: "載入為草稿",
   checkDialogTitle: "文本檢查",
   activityDialogTitle: "操作記錄",
+  orderedListTitle: "編號列表",
+  inlineCodeTitle: "行內程式碼",
+  strikeTitle: "刪除線",
+  linkTitle: "連結",
+  hrTitle: "分隔線",
+  boldPlaceholder: "粗體文字",
+  italicPlaceholder: "斜體文字",
+  codePlaceholder: "程式碼",
+  strikePlaceholder: "刪除文字",
+  linkTextPlaceholder: "連結文字",
   localePolicyTitle: "語言包確認",
   localePolicySubtitle: "首次啟用此語言包前需要確認作者聲明",
   localePolicyIntro: "請照著輸入下方官方標準短語。該確認只保存在本機，不上傳，不寫入操作記錄。",
@@ -316,6 +348,16 @@ I18N["ja-JP"] = {
   font: "フォント",
   fontSize: "サイズ",
   lineHeight: "行間",
+  orderedListTitle: "番号付きリスト",
+  inlineCodeTitle: "インラインコード",
+  strikeTitle: "取り消し線",
+  linkTitle: "リンク",
+  hrTitle: "区切り線",
+  boldPlaceholder: "太字テキスト",
+  italicPlaceholder: "斜体テキスト",
+  codePlaceholder: "コード",
+  strikePlaceholder: "削除テキスト",
+  linkTextPlaceholder: "リンク文字",
   editorPlaceholder: "ファイルを選んで書き始めます。",
   previewMarkdown: "Markdown プレビュー",
   returnEdit: "編集に戻る",
@@ -1136,7 +1178,7 @@ function loadViewPrefs() {
     state.viewPrefs = {
       ...state.viewPrefs,
       ...saved,
-      fontSize: Number(saved.fontSize) || state.viewPrefs.fontSize,
+      fontSize: clampFontSize(Number(saved.fontSize) || state.viewPrefs.fontSize),
       lineHeight: Number(saved.lineHeight) || state.viewPrefs.lineHeight,
     };
   } catch (_) {
@@ -1146,6 +1188,18 @@ function loadViewPrefs() {
 
 function saveViewPrefs() {
   window.localStorage.setItem(VIEW_PREF_KEY, JSON.stringify(state.viewPrefs));
+}
+
+function clampFontSize(value) {
+  const next = Number(value);
+  if (!Number.isFinite(next)) return state.viewPrefs.fontSize;
+  return Math.max(FONT_SIZE_MIN, Math.min(FONT_SIZE_MAX, Math.round(next)));
+}
+
+function setEditorFontSize(value) {
+  state.viewPrefs.fontSize = clampFontSize(value);
+  saveViewPrefs();
+  applyViewPrefs();
 }
 
 function applyViewPrefs() {
@@ -1265,6 +1319,11 @@ function applyLocaleStaticText() {
   setTitle('[data-format="h2"]', "h2Title");
   setTitle('[data-format="quote"]', "quoteTitle");
   setTitle('[data-format="list"]', "listTitle");
+  setTitle('[data-format="ordered-list"]', "orderedListTitle");
+  setTitle('[data-format="inline-code"]', "inlineCodeTitle");
+  setTitle('[data-format="strike"]', "strikeTitle");
+  setTitle('[data-format="link"]', "linkTitle");
+  setTitle('[data-format="hr"]', "hrTitle");
   setPlaceholder("#editor", "editorPlaceholder");
   els.togglePreview.textContent = state.showingPreview ? t("returnEdit") : t("previewMarkdown");
   els.diffDialog.querySelector("strong").textContent = t("diffTitle");
@@ -1850,14 +1909,71 @@ function toggleLinePrefix(prefix) {
   afterProgrammaticEdit();
 }
 
+function toggleOrderedList() {
+  if (!state.currentPath || state.showingPreview) return;
+  const { lineStart, lineEnd } = getSelectedLineRange();
+  const segment = els.editor.value.slice(lineStart, lineEnd);
+  const lines = segment.split("\n");
+  const hasPrefix = lines.every((line) => !line.trim() || /^\d+\.\s/.test(line));
+  let index = 1;
+  const replacement = lines
+    .map((line) => {
+      if (!line.trim()) return line;
+      return hasPrefix ? line.replace(/^\d+\.\s/, "") : `${index++}. ${line}`;
+    })
+    .join("\n");
+  els.editor.focus();
+  els.editor.setRangeText(replacement, lineStart, lineEnd, "select");
+  afterProgrammaticEdit();
+}
+
+function insertAtCursor(text, selectOffset = 0, selectLength = 0) {
+  if (!state.currentPath || state.showingPreview) return;
+  const start = els.editor.selectionStart || 0;
+  const end = els.editor.selectionEnd || start;
+  els.editor.focus();
+  els.editor.setRangeText(text, start, end, "end");
+  if (selectLength > 0) {
+    els.editor.setSelectionRange(start + selectOffset, start + selectOffset + selectLength);
+  }
+  afterProgrammaticEdit();
+}
+
+function insertHorizontalRule() {
+  const pos = els.editor.selectionStart || 0;
+  const before = els.editor.value.slice(0, pos);
+  const after = els.editor.value.slice(pos);
+  const prefix = before.endsWith("\n") || before.length === 0 ? "" : "\n";
+  const suffix = after.startsWith("\n") || after.length === 0 ? "" : "\n";
+  insertAtCursor(`${prefix}---${suffix}`);
+}
+
+function insertLink() {
+  if (!state.currentPath || state.showingPreview) return;
+  const start = els.editor.selectionStart || 0;
+  const end = els.editor.selectionEnd || start;
+  const selected = els.editor.value.slice(start, end) || t("linkTextPlaceholder");
+  const replacement = `[${selected}](https://)`;
+  els.editor.focus();
+  els.editor.setRangeText(replacement, start, end, "select");
+  const urlStart = start + selected.length + 3;
+  els.editor.setSelectionRange(urlStart, urlStart + 8);
+  afterProgrammaticEdit();
+}
+
 function applyFormat(action) {
   const actions = {
-    bold: () => wrapSelection("**", "**", "粗体文字"),
-    italic: () => wrapSelection("*", "*", "斜体文字"),
+    bold: () => wrapSelection("**", "**", t("boldPlaceholder")),
+    italic: () => wrapSelection("*", "*", t("italicPlaceholder")),
     h1: () => toggleLinePrefix("# "),
     h2: () => toggleLinePrefix("## "),
     quote: () => toggleLinePrefix("> "),
     list: () => toggleLinePrefix("- "),
+    "ordered-list": toggleOrderedList,
+    "inline-code": () => wrapSelection("`", "`", t("codePlaceholder")),
+    strike: () => wrapSelection("~~", "~~", t("strikePlaceholder")),
+    link: insertLink,
+    hr: insertHorizontalRule,
   };
   actions[action]?.();
 }
@@ -2012,9 +2128,7 @@ els.editorFontFamily.addEventListener("change", () => {
   applyViewPrefs();
 });
 els.editorFontSize.addEventListener("change", () => {
-  state.viewPrefs.fontSize = Number(els.editorFontSize.value) || 17;
-  saveViewPrefs();
-  applyViewPrefs();
+  setEditorFontSize(Number(els.editorFontSize.value) || 17);
 });
 els.editorLineHeight.addEventListener("change", () => {
   state.viewPrefs.lineHeight = Number(els.editorLineHeight.value) || 1.85;
@@ -2037,6 +2151,12 @@ els.localePolicyDialog.addEventListener("close", () => {
 els.formatButtons.forEach((button) => {
   button.addEventListener("click", () => applyFormat(button.dataset.format));
 });
+els.editor.addEventListener("wheel", (event) => {
+  if (!event.ctrlKey && !event.metaKey) return;
+  event.preventDefault();
+  const direction = event.deltaY < 0 ? 1 : -1;
+  setEditorFontSize(state.viewPrefs.fontSize + direction);
+}, { passive: false });
 els.confirmSave.addEventListener("click", (event) => {
   event.preventDefault();
   els.diffDialog.close();
