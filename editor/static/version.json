@@ -1,12 +1,11 @@
 {
-  "version": "0.2.22",
+  "version": "0.2.23",
   "name": "Four Seasons Markdown Editor",
   "channel": "public",
   "releaseDate": "2026-06-23",
   "downloadUrl": "https://github.com/shenqiu9355/fourseasons-markdown-editor",
   "notes": [
-    "Synced the current editor layout from the working build.",
-    "Added rename and folder creation support.",
-    "Added a non-blocking update reminder for future public releases."
+    "Fixed a layout overflow issue that could let the editor area overlap the sidebar after save or repaint.",
+    "Added stricter grid clipping, box sizing, and layer isolation for the main editor layout."
   ]
 }

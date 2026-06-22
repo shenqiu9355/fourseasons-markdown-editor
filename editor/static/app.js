@@ -25,7 +25,7 @@ const state = {
 
 const FONT_SIZE_MIN = 13;
 const FONT_SIZE_MAX = 28;
-const PUBLIC_VERSION = "0.2.22";
+const PUBLIC_VERSION = "0.2.23";
 const APP_VERSION = `Four Seasons v${PUBLIC_VERSION}`;
 const UPDATE_CHECK_URLS = [
   "/version.json",

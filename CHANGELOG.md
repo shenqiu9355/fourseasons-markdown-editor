@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.23
+
+- Fixed a layout overflow issue that could let the editor area overlap the sidebar after save or repaint.
+- Added stricter grid clipping, box sizing, and layer isolation for the main editor layout.
+
 ## 0.2.22
 
 - Synced the public editor UI with the current working layout.

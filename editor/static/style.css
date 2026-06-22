@@ -191,6 +191,7 @@ button.iconButton {
   grid-column: 2;
   grid-row: 1;
   position: relative;
+  z-index: 2;
   min-width: 0;
   height: 100vh;
   border-left: 1px solid var(--line-strong);
@@ -326,6 +327,7 @@ button.iconButton {
 
 .fileList {
   flex: 1;
+  min-width: 0;
   min-height: 0;
   overflow: auto;
   padding: 8px;
@@ -334,6 +336,8 @@ button.iconButton {
 
 .fileItem {
   width: 100%;
+  min-width: 0;
+  overflow: hidden;
   display: grid;
   gap: 4px;
   text-align: left;
@@ -425,10 +429,14 @@ button.iconButton {
 .workspace {
   grid-column: 1;
   grid-row: 1;
+  position: relative;
+  z-index: 1;
   min-width: 0;
   height: 100vh;
   display: grid;
   grid-template-rows: auto auto auto 1fr auto;
+  overflow: hidden;
+  isolation: isolate;
 }
 
 .topbar {
@@ -913,11 +921,13 @@ button.iconButton {
 .editorShell {
   position: relative;
   min-height: 0;
+  min-width: 0;
   padding: var(--space-4) var(--space-5) var(--space-5);
   background: var(--bg);
   display: grid;
   grid-template-columns: 36px minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr);
+  overflow: hidden;
 }
 
 .searchHitMarker {
@@ -968,6 +978,9 @@ button.iconButton {
 #editor,
 .preview {
   grid-row: 1;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
   width: 100%;
   height: 100%;
   border: 1px solid var(--line);
@@ -1003,6 +1016,8 @@ button.iconButton {
 .lineNumbers {
   grid-column: 1;
   grid-row: 1;
+  min-width: 0;
+  box-sizing: border-box;
   height: 100%;
   overflow: hidden;
   user-select: none;
