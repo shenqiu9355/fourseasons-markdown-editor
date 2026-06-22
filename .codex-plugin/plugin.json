@@ -1,0 +1,35 @@
+{
+  "name": "hongmeng-editor",
+  "version": "0.1.0",
+  "description": "A local-first Markdown editor and Codex plugin skill for configurable writing workspaces.",
+  "author": {
+    "name": "Lin Yanheng"
+  },
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "markdown",
+    "editor",
+    "writing",
+    "local-workspace"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Four Seasons Markdown Editor",
+    "shortDescription": "Open and manage a local Markdown editing workspace from Codex.",
+    "longDescription": "Four Seasons Markdown Editor provides a local browser-based Markdown editor plus Codex-facing instructions, without bundled private content or hard-coded machine paths.",
+    "developerName": "Lin Yanheng",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write",
+      "Local files"
+    ],
+    "defaultPrompt": [
+      "Open my Four Seasons Markdown editor workspace.",
+      "Create a direct editor link for this Markdown file.",
+      "Check the editor setup and privacy boundary."
+    ],
+    "brandColor": "#2563EB"
+  }
+}

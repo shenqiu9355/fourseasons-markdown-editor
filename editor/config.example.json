@@ -1,0 +1,17 @@
+{
+  "workspaceRoot": "../examples/sample-workspace",
+  "scopes": {
+    "novel": {
+      "label": "Drafts",
+      "path": "../examples/sample-workspace"
+    },
+    "project": {
+      "label": "Workspace",
+      "path": "../examples/sample-workspace"
+    },
+    "world": {
+      "label": "All Markdown",
+      "path": "../examples/sample-workspace"
+    }
+  }
+}
