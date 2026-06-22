@@ -12,6 +12,8 @@ It was adapted from a private writing workflow, but this public repository is co
 - Diff review before saving
 - Automatic pre-save backups
 - History view with "load as draft"
+- Rename the current Markdown file
+- Create folders inside the configured workspace
 - Full-text search inside the configured workspace
 - Basic punctuation/bracket/spacing check
 - Light, dark, and comfort themes
@@ -19,6 +21,7 @@ It was adapted from a private writing workflow, but this public repository is co
 - Ctrl/Command + mouse wheel font-size zoom inside the editor
 - Markdown formatting tools for bold, italic, headings, quotes, unordered and numbered lists, inline code, strikethrough, links, and horizontal rules
 - Interface languages: English, Simplified Chinese, Traditional Chinese, French, German, Spanish, Portuguese, Italian, Dutch, Polish, Russian, Turkish, Arabic, Hindi, Indonesian, Vietnamese, Thai, Korean, and Japanese
+- Non-blocking update reminder for future public releases
 
 Simplified Chinese, Traditional Chinese, and Japanese language packs require a one-time local acknowledgement phrase. The confirmation is stored only in the browser on the user's computer. It is not uploaded and is not written to the activity log.
 
@@ -84,6 +87,7 @@ hongmeng-editor/
 ├─ start.ps1
 ├─ start.sh
 ├─ requirements.txt
+├─ version.json
 ├─ INSTALL.md
 ├─ CHANGELOG.md
 ├─ LICENSE

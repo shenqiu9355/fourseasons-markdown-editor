@@ -1,6 +1,6 @@
 {
   "name": "hongmeng-editor",
-  "version": "0.1.0",
+  "version": "0.2.22",
   "description": "A local-first Markdown editor and Codex plugin skill for configurable writing workspaces.",
   "author": {
     "name": "Lin Yanheng"

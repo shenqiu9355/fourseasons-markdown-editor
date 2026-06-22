@@ -37,6 +37,8 @@ http://127.0.0.1:7865/
 
 When launched from a normal terminal, the editor is just a local web app and can be opened in any browser. When used from Codex Desktop, ask Codex to open the local URL in its in-app browser if that capability is available.
 
+The editor checks `version.json` in the background. If a newer public GitHub version exists, it shows a small update reminder near the version label. If the check fails, the editor stays quiet and local editing is unaffected.
+
 ## Configure With JSON
 
 Copy:

@@ -156,6 +156,53 @@ def safe_markdown_path(raw: str) -> Path:
     return candidate
 
 
+def safe_directory_path(raw: str, scope: str = "novel") -> Path:
+    decoded = urllib.parse.unquote(raw or "").strip().replace("\\", "/")
+    if not decoded:
+        raise ValueError("Missing folder path")
+    raw_path = Path(decoded)
+    if raw_path.is_absolute():
+        raise ValueError("Only workspace-relative folder paths are allowed")
+    if any(part in ("", ".", "..") for part in raw_path.parts):
+        raise ValueError("Invalid folder path")
+    if any(part in EXCLUDED_DIRS or part.startswith(".") for part in raw_path.parts):
+        raise ValueError("Hidden and system folders are not allowed")
+
+    _, _, root = safe_scope(scope)
+    candidate = (root / raw_path).resolve()
+    if root != candidate and root not in candidate.parents:
+        raise ValueError("Path is outside the configured workspace")
+
+    backup_root = BACKUP_DIR.resolve()
+    runtime_root = RUNTIME_DIR.resolve()
+    if backup_root == candidate or backup_root in candidate.parents:
+        raise ValueError("Cannot create folders inside the backup directory")
+    if runtime_root == candidate or runtime_root in candidate.parents:
+        raise ValueError("Cannot create folders inside the runtime directory")
+    return candidate
+
+
+def safe_rename_target(path: Path, raw_name: str) -> Path:
+    name = urllib.parse.unquote(raw_name or "").strip()
+    if not name:
+        raise ValueError("Missing new file name")
+    if "/" in name or "\\" in name:
+        raise ValueError("Rename only changes the file name; moving folders is not allowed")
+    if name in (".", "..") or name.startswith("."):
+        raise ValueError("Invalid file name")
+    if any(char in name for char in '<>:"|?*'):
+        raise ValueError("File name contains characters that are not allowed on Windows")
+    target_name = name if name.lower().endswith(".md") else f"{name}.md"
+    target = (path.parent / target_name).resolve()
+    if target.parent != path.parent.resolve():
+        raise ValueError("Path is outside the configured workspace")
+    if target.suffix.lower() != ".md":
+        raise ValueError("Only Markdown file names are allowed")
+    if target.exists() and target.resolve() != path.resolve():
+        raise ValueError("Target file already exists")
+    return target
+
+
 def relative_to_workspace(path: Path) -> str:
     return path.resolve().relative_to(WORKSPACE_ROOT.resolve()).as_posix()
 
@@ -475,6 +522,24 @@ class EditorHandler(BaseHTTPRequestHandler):
                     diff=diff_record,
                 )
                 self.send_json(fresh)
+                return
+            if route == "/api/rename":
+                path = safe_markdown_path(body.get("path", ""))
+                target = safe_rename_target(path, body.get("name", ""))
+                old_rel = relative_to_workspace(path)
+                if target.resolve() != path.resolve():
+                    path.rename(target)
+                fresh = file_info(target)
+                self.log_activity("rename_file", oldPath=old_rel, newPath=fresh["path"])
+                self.send_json(fresh)
+                return
+            if route == "/api/folder":
+                scope = body.get("scope", "novel")
+                folder = safe_directory_path(body.get("path", ""), scope)
+                folder.mkdir(parents=True, exist_ok=True)
+                rel = relative_to_workspace(folder)
+                self.log_activity("create_folder", scope=scope, path=rel)
+                self.send_json({"ok": True, "path": rel, "absolutePath": str(folder)})
                 return
             if route == "/api/session":
                 RUNTIME_DIR.mkdir(parents=True, exist_ok=True)

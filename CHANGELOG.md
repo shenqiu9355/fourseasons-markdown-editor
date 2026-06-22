@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.22
+
+- Synced the public editor UI with the current working layout.
+- Added line ruler, active-line highlight, cursor accent color controls, and bottom toolbar layout.
+- Added Markdown file rename and workspace folder creation.
+- Added a public `version.json` and a non-blocking update reminder.
+- Kept public source free of private content, private paths, runtime state, backups, activity logs, and map artwork.
+
 ## 0.1.0
 
 - Added the runnable Four Seasons Markdown Editor local web app.

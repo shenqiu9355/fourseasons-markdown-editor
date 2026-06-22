@@ -4,14 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Four Seasons Markdown Editor</title>
-  <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="/style.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23222222'/%3E%3Ccircle cx='22' cy='22' r='10' fill='%23d85a4f'/%3E%3Ccircle cx='42' cy='22' r='10' fill='%23d89a28'/%3E%3Ccircle cx='22' cy='42' r='10' fill='%234d9b6b'/%3E%3Ccircle cx='42' cy='42' r='10' fill='%235d78c8'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/style.css?v=0.2.22">
 </head>
 <body>
   <aside class="sidebar">
     <header class="brand">
-      <div>
-        <h1>Four Seasons Markdown Editor</h1>
+      <div class="brandText">
+        <div class="brandTitle">
+          <span class="seasonMark" aria-hidden="true">
+            <i></i><i></i><i></i><i></i>
+          </span>
+          <h1>Four Seasons Markdown Editor</h1>
+        </div>
         <p id="rootLabel">加载中...</p>
       </div>
       <button id="refreshFiles" class="iconButton" title="刷新章节">⟳</button>
@@ -45,75 +50,51 @@
       <div id="searchResults" class="searchResults"></div>
     </section>
     <nav id="fileList" class="fileList"></nav>
+    <footer class="sidebarFooter">
+      <button id="createFolder" title="在当前范围内新建文件夹">新建文件夹</button>
+    </footer>
   </aside>
 
   <main class="workspace">
     <header class="topbar">
       <div class="fileMeta">
-        <strong id="fileTitle">未选择章节</strong>
+        <div class="fileTitleRow">
+          <strong id="fileTitle">未选择章节</strong>
+          <button id="renameFile" class="renameFile" type="button" title="更改当前文件名">改名</button>
+        </div>
         <span id="filePath">从左侧选择正文文件</span>
-      </div>
-      <div class="topbarControls">
-        <div class="displayPrefs" aria-label="显示偏好">
-          <select id="localeSelect" class="localeSelect" title="Interface language" aria-label="Interface language">
-            <option value="en-US">English</option>
-            <option value="zh-CN">简体中文</option>
-            <option value="zh-Hant">繁體中文</option>
-            <option value="fr-FR">Français</option>
-            <option value="de-DE">Deutsch</option>
-            <option value="es-ES">Español</option>
-            <option value="pt-BR">Português</option>
-            <option value="it-IT">Italiano</option>
-            <option value="nl-NL">Nederlands</option>
-            <option value="pl-PL">Polski</option>
-            <option value="ru-RU">Русский</option>
-            <option value="tr-TR">Türkçe</option>
-            <option value="ar-SA">العربية</option>
-            <option value="hi-IN">हिन्दी</option>
-            <option value="id-ID">Bahasa Indonesia</option>
-            <option value="vi-VN">Tiếng Việt</option>
-            <option value="th-TH">ไทย</option>
-            <option value="ko-KR">한국어</option>
-            <option value="ja-JP">日本語</option>
-          </select>
-          <div class="themeSwitch" aria-label="主题切换">
-            <button type="button" data-theme="light" title="白色主题" aria-label="白色主题"><span class="themeDot lightDot"></span></button>
-            <button type="button" data-theme="dark" title="黑色主题" aria-label="黑色主题"><span class="themeDot darkDot"></span></button>
-            <button type="button" data-theme="eye" title="护眼主题" aria-label="护眼主题"><span class="themeDot eyeDot"></span></button>
-          </div>
-        </div>
-        <div class="saveActions">
-          <button id="previewDiff" title="只查看当前改动，不保存">查看改动</button>
-          <button id="saveFile" class="primary" title="Ctrl+S">保存</button>
-        </div>
       </div>
     </header>
 
     <section class="stats">
+      <button id="saveFile" class="primary" title="Ctrl+S">保存</button>
       <span id="saveState">未加载</span>
       <span id="charCount">0 字</span>
       <span id="cursorState">行 1，列 1</span>
+      <button id="previewDiff" title="只查看当前改动，不保存">查看改动</button>
       <span id="mtimeState"></span>
+      <span id="appVersion" class="appVersion">Four Seasons v0.2.22</span>
+      <button id="updateNotice" class="updateNotice hidden" type="button" title="Open GitHub update page"></button>
     </section>
 
     <section class="formatBar" aria-label="正文显示与 Markdown 工具">
-      <label>
+      <label class="fontFamilyControl">
         <span>字体</span>
         <select id="editorFontFamily" title="只改变编辑器显示字体，不修改正文">
-          <option value='system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'>System Sans</option>
-          <option value='"Microsoft YaHei", "Segoe UI", sans-serif'>Microsoft YaHei / 微软雅黑</option>
-          <option value='"Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif'>Traditional Chinese / 繁中黑体</option>
-          <option value='SimSun, "Songti SC", serif'>Songti / 宋体</option>
-          <option value='KaiTi, "Kaiti SC", serif'>Kaiti / 楷体</option>
-          <option value='FangSong, "Fangsong SC", serif'>Fangsong / 仿宋</option>
-          <option value='Georgia, "Times New Roman", serif'>English Serif</option>
-          <option value='"Cascadia Mono", "JetBrains Mono", Consolas, monospace'>Mono / Code</option>
-          <option value='"Yu Gothic", YuGothic, "Hiragino Sans", Meiryo, sans-serif'>Japanese Gothic / 日本語ゴシック</option>
-          <option value='"Yu Mincho", "Hiragino Mincho ProN", "MS Mincho", serif'>Japanese Mincho / 日本語明朝</option>
-          <option value='"Malgun Gothic", "Apple SD Gothic Neo", sans-serif'>Korean / 한국어</option>
+          <option value='"Microsoft YaHei", "Segoe UI", sans-serif'>微软雅黑 / Microsoft YaHei</option>
+          <option value='system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'>系统黑体 / System Sans</option>
+          <option value='"Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif'>繁中黑体 / Traditional Chinese</option>
+          <option value='SimSun, "Songti SC", serif'>宋体 / Songti</option>
+          <option value='KaiTi, "Kaiti SC", serif'>楷体 / Kaiti</option>
+          <option value='FangSong, "Fangsong SC", serif'>仿宋 / Fangsong</option>
+          <option value='Georgia, "Times New Roman", serif'>英文衬线 / English Serif</option>
+          <option value='"Cascadia Mono", "JetBrains Mono", Consolas, monospace'>等宽代码 / Mono</option>
+          <option value='"Yu Gothic", YuGothic, "Hiragino Sans", Meiryo, sans-serif'>日文黑体 / Japanese Gothic</option>
+          <option value='"Yu Mincho", "Hiragino Mincho ProN", "MS Mincho", serif'>日文明朝 / Japanese Mincho</option>
+          <option value='"Malgun Gothic", "Apple SD Gothic Neo", sans-serif'>韩文字体 / Korean</option>
         </select>
       </label>
-      <label>
+      <label class="fontSizeControl">
         <span>字号</span>
         <select id="editorFontSize" title="只改变编辑器显示字号，不修改正文">
           <option value="13">13</option>
@@ -134,7 +115,7 @@
           <option value="28">28</option>
         </select>
       </label>
-      <label>
+      <label class="lineHeightControl">
         <span>行距</span>
         <select id="editorLineHeight" title="只改变编辑器显示行距，不修改正文">
           <option value="1.65">1.65</option>
@@ -161,9 +142,12 @@
     </section>
 
     <section class="editorShell">
+      <div id="caretLineMarker" class="caretLineMarker hidden" aria-hidden="true"></div>
       <div id="searchHitMarker" class="searchHitMarker hidden" aria-hidden="true">
         <span>搜索命中</span>
       </div>
+      <div id="lineNumbers" class="lineNumbers" aria-hidden="true"></div>
+      <div id="lineMeasure" class="lineMeasure" aria-hidden="true"></div>
       <textarea id="editor" spellcheck="false" placeholder="选择一章开始写。"></textarea>
       <article id="preview" class="preview hidden"></article>
     </section>
@@ -171,6 +155,39 @@
     <footer class="bottomBar">
       <div class="bottomTools">
         <button id="togglePreview">预览 Markdown</button>
+        <select id="localeSelect" class="localeSelect" title="Interface language" aria-label="Interface language">
+          <option value="en-US">English</option>
+          <option value="zh-CN">简体中文</option>
+          <option value="zh-Hant">繁體中文</option>
+          <option value="fr-FR">Français</option>
+          <option value="de-DE">Deutsch</option>
+          <option value="es-ES">Español</option>
+          <option value="pt-BR">Português</option>
+          <option value="it-IT">Italiano</option>
+          <option value="nl-NL">Nederlands</option>
+          <option value="pl-PL">Polski</option>
+          <option value="ru-RU">Русский</option>
+          <option value="tr-TR">Türkçe</option>
+          <option value="ar-SA">العربية</option>
+          <option value="hi-IN">हिन्दी</option>
+          <option value="id-ID">Bahasa Indonesia</option>
+          <option value="vi-VN">Tiếng Việt</option>
+          <option value="th-TH">ไทย</option>
+          <option value="ko-KR">한국어</option>
+          <option value="ja-JP">日本語</option>
+        </select>
+        <div class="themeSwitch" aria-label="主题切换">
+          <button type="button" data-theme="light" title="白色主题" aria-label="白色主题"><span class="themeDot lightDot"></span></button>
+          <button type="button" data-theme="dark" title="黑色主题" aria-label="黑色主题"><span class="themeDot darkDot"></span></button>
+          <button type="button" data-theme="eye" title="护眼主题" aria-label="护眼主题"><span class="themeDot eyeDot"></span></button>
+        </div>
+        <div class="accentPicker" aria-label="光标与行尺颜色">
+          <button type="button" data-accent="crimson" title="红色光标" aria-label="红色光标"></button>
+          <button type="button" data-accent="amber" title="金色光标" aria-label="金色光标"></button>
+          <button type="button" data-accent="jade" title="绿色光标" aria-label="绿色光标"></button>
+          <button type="button" data-accent="sky" title="蓝色光标" aria-label="蓝色光标"></button>
+          <button type="button" data-accent="violet" title="紫色光标" aria-label="紫色光标"></button>
+        </div>
         <button id="checkFile" title="检查标点、括号和基础格式问题">检查</button>
         <button id="historyFile" title="查看保存前自动备份">历史</button>
         <button id="showActivity" title="查看最近操作记录">操作记录</button>
@@ -276,6 +293,26 @@
     </form>
   </dialog>
 
-  <script src="/app.js"></script>
+  <dialog id="textPromptDialog">
+    <form method="dialog" class="dialogBody textPromptDialog">
+      <header>
+        <div>
+          <strong id="textPromptTitle">输入</strong>
+          <span id="textPromptSubtitle"></span>
+        </div>
+        <button id="textPromptClose" value="cancel" class="iconButton" title="关闭">×</button>
+      </header>
+      <section class="textPromptBody">
+        <input id="textPromptInput" type="text" autocomplete="off" spellcheck="false">
+        <p id="textPromptError" class="policyError" aria-live="polite"></p>
+      </section>
+      <footer>
+        <button id="textPromptCancel" value="cancel">取消</button>
+        <button id="textPromptConfirm" type="button" class="primary">确认</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <script src="/app.js?v=0.2.22"></script>
 </body>
 </html>

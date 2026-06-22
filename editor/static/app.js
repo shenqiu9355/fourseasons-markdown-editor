@@ -12,6 +12,10 @@ const state = {
   locale: "en-US",
   pendingLocale: "",
   theme: "light",
+  accent: "crimson",
+  lineCount: 0,
+  activeLine: 1,
+  lineMetricsKey: "",
   viewPrefs: {
     fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     fontSize: 17,
@@ -21,9 +25,24 @@ const state = {
 
 const FONT_SIZE_MIN = 13;
 const FONT_SIZE_MAX = 28;
-const VIEW_PREF_KEY = "hongmengEditorViewPrefs";
-const THEME_KEY = "hongmengEditorTheme";
-const LOCALE_KEY = "hongmengEditorLocale";
+const PUBLIC_VERSION = "0.2.22";
+const APP_VERSION = `Four Seasons v${PUBLIC_VERSION}`;
+const UPDATE_CHECK_URLS = [
+  "/version.json",
+  "https://raw.githubusercontent.com/shenqiu9355/fourseasons-markdown-editor/main/version.json",
+];
+const UPDATE_HOME_URL = "https://github.com/shenqiu9355/fourseasons-markdown-editor";
+const VIEW_PREF_KEY = "fourSeasonsEditorViewPrefs";
+const THEME_KEY = "fourSeasonsEditorTheme";
+const ACCENT_KEY = "fourSeasonsEditorAccent";
+const LOCALE_KEY = "fourSeasonsEditorLocale";
+const ACCENTS = {
+  crimson: { color: "#e04444", soft: "rgba(224, 68, 68, 0.2)", selection: "rgba(224, 68, 68, 0.38)" },
+  amber: { color: "#d48806", soft: "rgba(212, 136, 6, 0.2)", selection: "rgba(212, 136, 6, 0.38)" },
+  jade: { color: "#2fa866", soft: "rgba(47, 168, 102, 0.2)", selection: "rgba(47, 168, 102, 0.38)" },
+  sky: { color: "#2f7fe5", soft: "rgba(47, 127, 229, 0.2)", selection: "rgba(47, 127, 229, 0.38)" },
+  violet: { color: "#8f55e6", soft: "rgba(143, 85, 230, 0.2)", selection: "rgba(143, 85, 230, 0.38)" },
+};
 const LOCALE_POLICY_KEY_PREFIX = "fourSeasons.localePolicy.oneChinaAcknowledged.v1";
 const RESTRICTED_LOCALES = new Set(["zh-CN", "zh-Hant", "ja-JP"]);
 const LOCALE_POLICY_PHRASES = {
@@ -53,6 +72,15 @@ const I18N = {
     resultsCount: "{count} 处命中",
     searching: "搜索中...",
     activityLog: "操作记录",
+    createFolder: "新建文件夹",
+    createFolderTitle: "在当前范围内新建文件夹",
+    createFolderPrompt: "输入新文件夹相对路径，例如：drafts/notes",
+    createFolderDone: "已创建文件夹：{path}",
+    renameFile: "改名",
+    renameFileTitle: "更改当前文件名",
+    renamePrompt: "输入新的 Markdown 文件名",
+    renameDone: "已改名：{path}",
+    renameUnsaved: "请先保存当前改动，再改文件名。",
     noFileTitle: "未选择章节",
     noFilePath: "从左侧选择正文文件",
     localeTitle: "界面语言",
@@ -107,6 +135,9 @@ const I18N = {
     noChangesSummary: "当前内容与磁盘文件一致",
     cancel: "取消",
     close: "关闭",
+    promptTitle: "输入",
+    promptConfirm: "确认",
+    promptRequired: "请输入内容。",
     confirmSave: "确认保存",
     backupDone: "已备份：{backup}",
     backupDiffDone: "已备份：{backup}；Diff：{diff}",
@@ -149,7 +180,9 @@ const I18N = {
     localePolicyCopy: "复制短语",
     localePolicyCancel: "取消",
     localePolicyConfirm: "确认并启用",
-    localePolicyError: "输入内容必须与官方标准短语一致。",
+    updateAvailable: "发现新版 {version}",
+    updateOpen: "打开 GitHub 更新页",
+  localePolicyError: "输入内容必须与官方标准短语一致。",
   },
   "en-US": {
     appTitle: "Four Seasons Markdown Editor",
@@ -172,6 +205,15 @@ const I18N = {
     resultsCount: "{count} matches",
     searching: "Searching...",
     activityLog: "Activity",
+    createFolder: "New Folder",
+    createFolderTitle: "Create a folder in the current scope",
+    createFolderPrompt: "Enter a relative folder path, for example: volume-1/notes",
+    createFolderDone: "Created folder: {path}",
+    renameFile: "Rename",
+    renameFileTitle: "Rename the current file",
+    renamePrompt: "Enter the new Markdown file name",
+    renameDone: "Renamed: {path}",
+    renameUnsaved: "Save current changes before renaming the file.",
     noFileTitle: "No file selected",
     noFilePath: "Choose a Markdown file from the left",
     localeTitle: "Interface language",
@@ -226,6 +268,9 @@ const I18N = {
     noChangesSummary: "Current content matches the disk file",
     cancel: "Cancel",
     close: "Close",
+    promptTitle: "Input",
+    promptConfirm: "Confirm",
+    promptRequired: "Please enter a value.",
     confirmSave: "Confirm Save",
     backupDone: "Backup: {backup}",
     backupDiffDone: "Backup: {backup}; Diff: {diff}",
@@ -269,6 +314,8 @@ const I18N = {
     localePolicyCancel: "Cancel",
     localePolicyConfirm: "Acknowledge and Enable",
     localePolicyError: "The input must match the official phrase exactly.",
+    updateAvailable: "Update {version} available",
+    updateOpen: "Open GitHub update page",
   },
 };
 I18N["zh-Hant"] = {
@@ -1059,10 +1106,6 @@ I18N["th-TH"] = {
   activityDialogTitle: "กิจกรรม",
 };
 
-function hasLocalizedValue(text, key) {
-  return Object.values(I18N).some((dict) => dict[key] === text);
-}
-
 function t(key, vars = {}) {
   const template = (I18N[state.locale] && I18N[state.locale][key]) || I18N["en-US"][key] || key;
   return Object.entries(vars).reduce((text, [name, value]) => text.replaceAll(`{${name}}`, String(value)), template);
@@ -1081,18 +1124,25 @@ const els = {
   searchResults: document.querySelector("#searchResults"),
   refreshFiles: document.querySelector("#refreshFiles"),
   fileTitle: document.querySelector("#fileTitle"),
+  renameFile: document.querySelector("#renameFile"),
   filePath: document.querySelector("#filePath"),
   saveState: document.querySelector("#saveState"),
   charCount: document.querySelector("#charCount"),
   cursorState: document.querySelector("#cursorState"),
   mtimeState: document.querySelector("#mtimeState"),
+  appVersion: document.querySelector("#appVersion"),
+  updateNotice: document.querySelector("#updateNotice"),
   backupState: document.querySelector("#backupState"),
   themeButtons: document.querySelectorAll("[data-theme]"),
+  accentButtons: document.querySelectorAll("[data-accent]"),
   editorFontFamily: document.querySelector("#editorFontFamily"),
   editorFontSize: document.querySelector("#editorFontSize"),
   editorLineHeight: document.querySelector("#editorLineHeight"),
   localeSelect: document.querySelector("#localeSelect"),
   formatButtons: document.querySelectorAll("[data-format]"),
+  lineNumbers: document.querySelector("#lineNumbers"),
+  lineMeasure: document.querySelector("#lineMeasure"),
+  caretLineMarker: document.querySelector("#caretLineMarker"),
   editor: document.querySelector("#editor"),
   searchHitMarker: document.querySelector("#searchHitMarker"),
   preview: document.querySelector("#preview"),
@@ -1111,6 +1161,7 @@ const els = {
   historyList: document.querySelector("#historyList"),
   historyDiff: document.querySelector("#historyDiff"),
   restoreHistory: document.querySelector("#restoreHistory"),
+  createFolder: document.querySelector("#createFolder"),
   checkDialog: document.querySelector("#checkDialog"),
   checkSummary: document.querySelector("#checkSummary"),
   checkResults: document.querySelector("#checkResults"),
@@ -1124,6 +1175,13 @@ const els = {
   localePolicyError: document.querySelector("#localePolicyError"),
   localePolicyCancel: document.querySelector("#localePolicyCancel"),
   localePolicyConfirm: document.querySelector("#localePolicyConfirm"),
+  textPromptDialog: document.querySelector("#textPromptDialog"),
+  textPromptTitle: document.querySelector("#textPromptTitle"),
+  textPromptSubtitle: document.querySelector("#textPromptSubtitle"),
+  textPromptInput: document.querySelector("#textPromptInput"),
+  textPromptError: document.querySelector("#textPromptError"),
+  textPromptCancel: document.querySelector("#textPromptCancel"),
+  textPromptConfirm: document.querySelector("#textPromptConfirm"),
   showActivity: document.querySelector("#showActivity"),
   activityDialog: document.querySelector("#activityDialog"),
   activityView: document.querySelector("#activityView"),
@@ -1172,6 +1230,32 @@ function setTheme(theme) {
   applyTheme();
 }
 
+function loadAccent() {
+  const savedAccent = window.localStorage.getItem(ACCENT_KEY);
+  if (ACCENTS[savedAccent]) {
+    state.accent = savedAccent;
+  }
+}
+
+function applyAccent() {
+  const accent = ACCENTS[state.accent] || ACCENTS.crimson;
+  document.documentElement.style.setProperty("--focus-color", accent.color);
+  document.documentElement.style.setProperty("--focus-soft", accent.soft);
+  document.documentElement.style.setProperty("--focus-selection", accent.selection);
+  els.accentButtons.forEach((button) => {
+    const active = button.dataset.accent === state.accent;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+}
+
+function setAccent(accent) {
+  if (!ACCENTS[accent]) return;
+  state.accent = accent;
+  window.localStorage.setItem(ACCENT_KEY, accent);
+  applyAccent();
+}
+
 function loadViewPrefs() {
   try {
     const saved = JSON.parse(window.localStorage.getItem(VIEW_PREF_KEY) || "{}");
@@ -1210,9 +1294,15 @@ function applyViewPrefs() {
   els.preview.style.fontSize = `${fontSize}px`;
   els.editor.style.lineHeight = lineHeight;
   els.preview.style.lineHeight = lineHeight;
+  if (els.lineNumbers) {
+    const baseLineHeight = fontSize * lineHeight;
+    els.lineNumbers.style.setProperty("--base-line-height", `${baseLineHeight}px`);
+    els.lineNumbers.style.setProperty("--line-number-height", `${baseLineHeight}px`);
+  }
   els.editorFontFamily.value = fontFamily;
   els.editorFontSize.value = String(fontSize);
   els.editorLineHeight.value = String(lineHeight);
+  updateStats();
   updateSearchMarker();
 }
 
@@ -1254,9 +1344,9 @@ function canEnableLocale(locale) {
 function loadLocalePreference() {
   const savedLocale = window.localStorage.getItem(LOCALE_KEY);
   if (savedLocale && I18N[savedLocale]) {
-    if (RESTRICTED_LOCALES.has(savedLocale) && !isLocalePolicyAcknowledged(savedLocale)) {
-      window.localStorage.setItem(LOCALE_KEY, "en-US");
-      state.locale = "en-US";
+    if (RESTRICTED_LOCALES.has(savedLocale) && savedLocale !== "zh-CN" && !isLocalePolicyAcknowledged(savedLocale)) {
+      window.localStorage.setItem(LOCALE_KEY, "zh-CN");
+      state.locale = "zh-CN";
       return;
     }
     state.locale = savedLocale;
@@ -1265,7 +1355,6 @@ function loadLocalePreference() {
 
 function applyLocaleStaticText() {
   document.documentElement.lang = state.locale;
-  document.documentElement.dir = state.locale === "ar-SA" ? "rtl" : "ltr";
   document.title = t("appTitle");
   els.localeSelect.value = state.locale;
   els.localeSelect.title = t("localeTitle");
@@ -1285,10 +1374,18 @@ function applyLocaleStaticText() {
   if (searchBoxLabels[3]) searchBoxLabels[3].textContent = t("contentSearch");
   setPlaceholder("#contentSearch", "contentSearchPlaceholder");
   setText("#contentSearchButton", "search");
-  if (hasLocalizedValue(els.searchSummary.textContent, "notSearched")) {
+  if (els.searchSummary.textContent === I18N["zh-CN"].notSearched || els.searchSummary.textContent === I18N["en-US"].notSearched || els.searchSummary.textContent === I18N["zh-Hant"].notSearched || els.searchSummary.textContent === I18N["ja-JP"].notSearched) {
     els.searchSummary.textContent = t("notSearched");
   }
   setText("#showActivity", "activityLog");
+  setText("#createFolder", "createFolder");
+  setTitle("#createFolder", "createFolderTitle");
+  setText("#renameFile", "renameFile");
+  setTitle("#renameFile", "renameFileTitle");
+  if (els.appVersion) els.appVersion.textContent = APP_VERSION;
+  if (els.updateNotice && !els.updateNotice.classList.contains("hidden")) {
+    els.updateNotice.title = t("updateOpen");
+  }
   if (!state.currentPath) {
     els.fileTitle.textContent = t("noFileTitle");
     els.filePath.textContent = t("noFilePath");
@@ -1309,9 +1406,9 @@ function applyLocaleStaticText() {
   setText("#previewDiff", "viewChanges");
   setTitle("#previewDiff", "viewChangesTitle");
   setText("#saveFile", "save");
-  setText(".formatBar label:nth-of-type(1) span", "font");
-  setText(".formatBar label:nth-of-type(2) span", "fontSize");
-  setText(".formatBar label:nth-of-type(3) span", "lineHeight");
+  setText(".fontFamilyControl span", "font");
+  setText(".fontSizeControl span", "fontSize");
+  setText(".lineHeightControl span", "lineHeight");
   document.querySelector(".formatBar").setAttribute("aria-label", t("formatLabel"));
   setTitle('[data-format="bold"]', "boldTitle");
   setTitle('[data-format="italic"]', "italicTitle");
@@ -1327,7 +1424,7 @@ function applyLocaleStaticText() {
   setPlaceholder("#editor", "editorPlaceholder");
   els.togglePreview.textContent = state.showingPreview ? t("returnEdit") : t("previewMarkdown");
   els.diffDialog.querySelector("strong").textContent = t("diffTitle");
-  if (!els.diffSummary.textContent || hasLocalizedValue(els.diffSummary.textContent, "diffSummaryDefault")) {
+  if (!els.diffSummary.textContent || els.diffSummary.textContent === I18N["zh-CN"].diffSummaryDefault || els.diffSummary.textContent === I18N["en-US"].diffSummaryDefault) {
     els.diffSummary.textContent = t("diffSummaryDefault");
   }
   els.confirmSave.textContent = t("confirmSave");
@@ -1359,6 +1456,8 @@ function applyLocaleStaticText() {
   els.localePolicyCopy.textContent = t("localePolicyCopy");
   els.localePolicyCancel.textContent = t("localePolicyCancel");
   els.localePolicyConfirm.textContent = t("localePolicyConfirm");
+  els.textPromptCancel.textContent = t("cancel");
+  els.textPromptConfirm.textContent = t("promptConfirm");
   updateStats();
   markDirty(state.dirty);
 }
@@ -1404,6 +1503,42 @@ function confirmLocalePolicy() {
   applyLocale(locale);
 }
 
+function openTextPrompt({ title, subtitle = "", value = "", required = true }) {
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = (result) => {
+      if (settled) return;
+      settled = true;
+      els.textPromptDialog.removeEventListener("close", handleClose);
+      els.textPromptConfirm.removeEventListener("click", handleConfirm);
+      resolve(result);
+    };
+    const handleClose = () => finish(null);
+    const handleConfirm = () => {
+      const nextValue = els.textPromptInput.value.trim();
+      if (required && !nextValue) {
+        els.textPromptError.textContent = t("promptRequired");
+        els.textPromptInput.focus();
+        return;
+      }
+      finish(nextValue);
+      els.textPromptDialog.close("confirm");
+    };
+
+    els.textPromptTitle.textContent = title || t("promptTitle");
+    els.textPromptSubtitle.textContent = subtitle;
+    els.textPromptInput.value = value;
+    els.textPromptError.textContent = "";
+    els.textPromptDialog.addEventListener("close", handleClose);
+    els.textPromptConfirm.addEventListener("click", handleConfirm);
+    els.textPromptDialog.showModal();
+    window.setTimeout(() => {
+      els.textPromptInput.focus();
+      els.textPromptInput.select();
+    }, 0);
+  });
+}
+
 function hashText(text) {
   let h = 2166136261;
   for (let i = 0; i < text.length; i += 1) {
@@ -1417,6 +1552,109 @@ function markDirty(dirty) {
   state.dirty = dirty;
   els.saveState.className = dirty ? "dirty" : "saved";
   els.saveState.textContent = dirty ? t("unsaved") : state.currentPath ? t("saved") : t("unloaded");
+  els.renameFile.disabled = !state.currentPath;
+}
+
+function syncLineNumberScroll() {
+  if (!els.lineNumbers) return;
+  els.lineNumbers.scrollTop = els.editor.scrollTop;
+}
+
+function updateCaretLineMarker() {
+  const marker = els.caretLineMarker;
+  if (!marker || !state.currentPath || state.showingPreview) {
+    marker?.classList.add("hidden");
+    return;
+  }
+  const active = els.lineNumbers?.querySelector(`[data-line="${state.activeLine}"]`);
+  if (!active) {
+    marker.classList.add("hidden");
+    return;
+  }
+  const editor = els.editor;
+  const shell = editor.parentElement;
+  const shellRect = shell.getBoundingClientRect();
+  const editorRect = editor.getBoundingClientRect();
+  const activeRect = active.getBoundingClientRect();
+  const top = activeRect.top - shellRect.top;
+  const minTop = editorRect.top - shellRect.top;
+  const maxTop = editorRect.bottom - shellRect.top;
+  if (top + activeRect.height < minTop || top > maxTop) {
+    marker.classList.add("hidden");
+    return;
+  }
+  const visibleTop = Math.max(minTop, top);
+  marker.style.top = `${visibleTop}px`;
+  marker.style.left = `${editorRect.left - shellRect.left}px`;
+  marker.style.width = `${editorRect.width}px`;
+  marker.style.height = `${Math.min(activeRect.height, maxTop - visibleTop)}px`;
+  marker.classList.remove("hidden");
+}
+
+function measureVisualLineHeights(lines) {
+  if (!els.lineMeasure) return [];
+  const editorStyles = window.getComputedStyle(els.editor);
+  const fontSize = parseFloat(editorStyles.fontSize) || state.viewPrefs.fontSize;
+  const lineHeight = parseFloat(editorStyles.lineHeight) || fontSize * state.viewPrefs.lineHeight;
+  const paddingLeft = parseFloat(editorStyles.paddingLeft) || 0;
+  const paddingRight = parseFloat(editorStyles.paddingRight) || 0;
+  const contentWidth = Math.max(40, els.editor.clientWidth - paddingLeft - paddingRight);
+
+  els.lineMeasure.style.width = `${contentWidth}px`;
+  els.lineMeasure.style.fontFamily = editorStyles.fontFamily;
+  els.lineMeasure.style.fontSize = editorStyles.fontSize;
+  els.lineMeasure.style.fontWeight = editorStyles.fontWeight;
+  els.lineMeasure.style.letterSpacing = editorStyles.letterSpacing;
+  els.lineMeasure.style.lineHeight = editorStyles.lineHeight;
+
+  return lines.map((rawLine) => {
+    els.lineMeasure.textContent = rawLine || " ";
+    const rows = Math.max(1, Math.round(els.lineMeasure.scrollHeight / lineHeight));
+    return {
+      rows,
+      height: rows * lineHeight,
+    };
+  });
+}
+
+function updateLineNumbers(line, lines) {
+  if (!els.lineNumbers) return;
+  const sourceLines = lines.length ? lines : [""];
+  const nextCount = sourceLines.length;
+  const metricsKey = [
+    nextCount,
+    els.editor.clientWidth,
+    state.viewPrefs.fontFamily,
+    state.viewPrefs.fontSize,
+    state.viewPrefs.lineHeight,
+    hashText(sourceLines.join("\n")),
+  ].join("|");
+
+  if (state.lineCount !== nextCount || state.lineMetricsKey !== metricsKey) {
+    const metrics = measureVisualLineHeights(sourceLines);
+    const fragment = document.createDocumentFragment();
+    for (let index = 1; index <= nextCount; index += 1) {
+      const item = document.createElement("span");
+      const metric = metrics[index - 1] || { rows: 1, height: state.viewPrefs.fontSize * state.viewPrefs.lineHeight };
+      item.dataset.line = String(index);
+      item.textContent = String(index);
+      item.style.height = `${metric.height}px`;
+      item.classList.toggle("wrapped", metric.rows > 1);
+      fragment.appendChild(item);
+    }
+    els.lineNumbers.replaceChildren(fragment);
+    state.lineCount = nextCount;
+    state.lineMetricsKey = metricsKey;
+  }
+
+  if (state.activeLine !== line) {
+    els.lineNumbers.querySelector(".active")?.classList.remove("active");
+    state.activeLine = line;
+  }
+  const active = els.lineNumbers.querySelector(`[data-line="${line}"]`);
+  if (active) active.classList.add("active");
+  syncLineNumberScroll();
+  updateCaretLineMarker();
 }
 
 function updateStats() {
@@ -1429,6 +1667,7 @@ function updateStats() {
   const line = before.split("\n").length;
   const col = before.length - before.lastIndexOf("\n");
   els.cursorState.textContent = t("cursor", { line, col });
+  updateLineNumbers(line, text.split("\n"));
 }
 
 function clearSearchMarker() {
@@ -1467,6 +1706,50 @@ function updateSearchMarker() {
   marker.classList.remove("hidden");
 }
 
+function parseVersionParts(version) {
+  return String(version || "")
+    .replace(/^v/i, "")
+    .split(".")
+    .map((part) => Number.parseInt(part, 10) || 0);
+}
+
+function compareVersions(left, right) {
+  const a = parseVersionParts(left);
+  const b = parseVersionParts(right);
+  const length = Math.max(a.length, b.length);
+  for (let i = 0; i < length; i += 1) {
+    const diff = (a[i] || 0) - (b[i] || 0);
+    if (diff !== 0) return diff;
+  }
+  return 0;
+}
+
+function showUpdateNotice(meta) {
+  if (!els.updateNotice || !meta || !meta.version) return;
+  if (compareVersions(meta.version, PUBLIC_VERSION) <= 0) return;
+  const url = meta.downloadUrl || meta.releaseUrl || UPDATE_HOME_URL;
+  els.updateNotice.textContent = t("updateAvailable", { version: meta.version });
+  els.updateNotice.title = t("updateOpen");
+  els.updateNotice.dataset.url = url;
+  els.updateNotice.classList.remove("hidden");
+}
+
+async function checkForUpdates() {
+  if (!els.updateNotice) return;
+  for (const url of UPDATE_CHECK_URLS) {
+    try {
+      const separator = url.includes("?") ? "&" : "?";
+      const response = await fetch(url + separator + "t=" + Date.now(), { cache: "no-store" });
+      if (!response.ok) continue;
+      const meta = await response.json();
+      showUpdateNotice(meta);
+      return;
+    } catch (_) {
+      // Update checks are best-effort and must never block local editing.
+    }
+  }
+}
+
 function renderFiles() {
   const keyword = els.fileSearch.value.trim().toLowerCase();
   els.fileList.innerHTML = "";
@@ -1503,6 +1786,7 @@ function setLoadedFile(data) {
   els.editor.value = data.content;
   els.fileTitle.textContent = data.name;
   els.filePath.textContent = data.path;
+  els.renameFile.disabled = false;
   els.mtimeState.textContent = t("modifiedAt", { mtime: data.mtime });
   els.backupState.textContent = "";
   markDirty(false);
@@ -1646,6 +1930,37 @@ async function saveCurrent() {
     } else {
       window.alert(error.message);
     }
+  }
+}
+
+async function renameCurrentFile() {
+  if (!state.currentPath) return;
+  if (state.dirty) {
+    window.alert(t("renameUnsaved"));
+    return;
+  }
+  const currentName = state.currentPath.split("/").pop() || "";
+  const raw = await openTextPrompt({
+    title: t("renameFileTitle"),
+    subtitle: t("renamePrompt"),
+    value: currentName,
+  });
+  const newName = String(raw || "").trim();
+  if (!newName || newName === currentName) return;
+  try {
+    const data = await api("/api/rename", {
+      method: "POST",
+      body: JSON.stringify({
+        path: state.currentPath,
+        name: newName,
+      }),
+    });
+    setLoadedFile(data);
+    updateEditorUrl(data.path);
+    els.backupState.className = "muted";
+    els.backupState.textContent = t("renameDone", { path: data.path });
+  } catch (error) {
+    window.alert(error.message);
   }
 }
 
@@ -2037,15 +2352,20 @@ function togglePreview() {
   state.showingPreview = !state.showingPreview;
   if (state.showingPreview) {
     updateSearchMarker();
+    updateCaretLineMarker();
     els.preview.innerHTML = renderMarkdown(els.editor.value);
     els.preview.classList.remove("hidden");
     els.editor.classList.add("hidden");
+    els.lineNumbers.classList.add("hidden");
     els.togglePreview.textContent = t("returnEdit");
   } else {
     els.preview.classList.add("hidden");
     els.editor.classList.remove("hidden");
+    els.lineNumbers.classList.remove("hidden");
     els.togglePreview.textContent = t("previewMarkdown");
     els.editor.focus();
+    syncLineNumberScroll();
+    updateCaretLineMarker();
     updateSearchMarker();
   }
 }
@@ -2076,6 +2396,26 @@ function scheduleSnapshot() {
   state.snapshotTimer = window.setTimeout(postSnapshot, 500);
 }
 
+async function createFolder() {
+  const raw = await openTextPrompt({
+    title: t("createFolder"),
+    subtitle: t("createFolderPrompt"),
+  });
+  const path = String(raw || "").trim();
+  if (!path) return;
+  try {
+    const data = await api("/api/folder", {
+      method: "POST",
+      body: JSON.stringify({ scope: state.scope, path }),
+    });
+    els.backupState.className = "muted";
+    els.backupState.textContent = t("createFolderDone", { path: data.path });
+    await loadFiles();
+  } catch (error) {
+    window.alert(error.message);
+  }
+}
+
 els.editor.addEventListener("input", () => {
   clearSearchMarker();
   markDirty(els.editor.value !== state.savedContent);
@@ -2090,7 +2430,11 @@ els.editor.addEventListener("click", () => {
   updateStats();
   scheduleSnapshot();
 });
-els.editor.addEventListener("scroll", updateSearchMarker);
+els.editor.addEventListener("scroll", () => {
+  syncLineNumberScroll();
+  updateCaretLineMarker();
+  updateSearchMarker();
+});
 els.scopeSelect.addEventListener("change", () => {
   state.scope = els.scopeSelect.value;
   loadFiles();
@@ -2112,15 +2456,24 @@ els.contentSearch.addEventListener("keydown", (event) => {
 });
 els.refreshFiles.addEventListener("click", loadFiles);
 els.reloadFile.addEventListener("click", reloadCurrent);
+els.renameFile.addEventListener("click", renameCurrentFile);
 els.historyFile.addEventListener("click", showHistory);
 els.checkFile.addEventListener("click", showChecks);
 els.previewDiff.addEventListener("click", showDiff);
 els.saveFile.addEventListener("click", showDiff);
 els.togglePreview.addEventListener("click", togglePreview);
 els.showActivity.addEventListener("click", showActivity);
+els.createFolder.addEventListener("click", createFolder);
+els.updateNotice?.addEventListener("click", () => {
+  const url = els.updateNotice.dataset.url || UPDATE_HOME_URL;
+  window.open(url, "_blank", "noopener,noreferrer");
+});
 els.restoreHistory.addEventListener("click", restoreSelectedHistory);
 els.themeButtons.forEach((button) => {
   button.addEventListener("click", () => setTheme(button.dataset.theme));
+});
+els.accentButtons.forEach((button) => {
+  button.addEventListener("click", () => setAccent(button.dataset.accent));
 });
 els.editorFontFamily.addEventListener("change", () => {
   state.viewPrefs.fontFamily = els.editorFontFamily.value;
@@ -2142,6 +2495,12 @@ els.localePolicyCopy.addEventListener("click", () => {
   els.localePolicyInput.focus();
 });
 els.localePolicyConfirm.addEventListener("click", confirmLocalePolicy);
+els.textPromptInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    els.textPromptConfirm.click();
+  }
+});
 els.localePolicyDialog.addEventListener("close", () => {
   if (state.pendingLocale) {
     els.localeSelect.value = state.locale;
@@ -2176,6 +2535,12 @@ window.addEventListener("keydown", (event) => {
   }
 });
 
+window.addEventListener("resize", () => {
+  state.lineMetricsKey = "";
+  updateStats();
+  updateSearchMarker();
+});
+
 window.addEventListener("beforeunload", (event) => {
   if (!state.dirty) return;
   event.preventDefault();
@@ -2188,14 +2553,7 @@ function parsePositiveInt(raw, fallback = 0) {
 }
 
 function scopeForPath(path) {
-  const normalized = String(path || "").replace(/\\/g, "/");
-  if (normalized.startsWith("documents/") || normalized.includes("/documents/") || normalized.startsWith("drafts/") || normalized.includes("/drafts/")) {
-    return "novel";
-  }
-  if (normalized.startsWith("project/") || normalized.includes("/project/")) {
-    return "project";
-  }
-  return "world";
+  return state.scope || "novel";
 }
 
 function getInitialOpenTarget() {
@@ -2230,6 +2588,8 @@ async function boot() {
   loadLocalePreference();
   loadTheme();
   applyTheme();
+  loadAccent();
+  applyAccent();
   loadViewPrefs();
   applyViewPrefs();
   applyLocaleStaticText();
